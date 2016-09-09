@@ -1,18 +1,18 @@
 /**
- * EmployeeController
+ * UsersController
  *
- * @description :: Server-side logic for managing employees
+ * @description :: Server-side logic for managing users
  * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
  */
 
 var Client = require('node-rest-client').Client;
 var client = new Client();
-var endpoint = "http://localhost:1337/employee"
+var endpoint = "http://localhost:1337/users"
 
 module.exports = {
 
   /**
-   * `EmployeeController.create()`
+   * `UsersController.create()`
    */
   create: function (req, res) {
         
@@ -39,21 +39,21 @@ module.exports = {
 
 
   /**
-   * `EmployeeController.read()`
+   * `UsersController.read()`
    */
   read: function (req, res) {
 
     client.get(endpoint, function (data, response) {
-        return res.view('read', {employees: data});
+        return res.view('read', {users: data});
     }).on('error', function (err) {
-        return res.view('read', {error: { message: "There was an error getting the employees"}});
+        return res.view('read', {error: { message: "There was an error getting the record."}});
     });
 
   },
 
 
   /**
-   * `EmployeeController.update()`
+   * `UsersController.update()`
    */
   update: function (req, res) {
     return res.json({
@@ -63,12 +63,32 @@ module.exports = {
 
 
   /**
-   * `EmployeeController.delete()`
+   * `UsersController.delete()`
    */
   delete: function (req, res) {
-    return res.json({
-      todo: 'delete() is not implemented yet!'
-    });
-  }
+
+     var values = req.allParams();
+     var modifiedEndpoint = "http://localhost:1337/users/" + values.id;
+      //this calls the data you need to delete 
+       if(req.method != "POST"){
+         return res.view('delete');}
+
+       
+
+       var args = {
+           data: req.body,
+           headers: { "Content-Type": "application/json" }
+       };
+        //this actually deletes
+       client.delete(modifiedEndpoint, args, function (data, response) {
+           //return res.view('create', {success: { message: "Record delete successfully"}});
+           if(response.statusCode != "200"){
+               return res.view('delete', {error:{message: response.statusMessage + ": " + data.reason}});
+           }
+
+           return res.view('delete', {success:{message: "Record deleted successfully"}});
+
+       })
+     }
 };
 
